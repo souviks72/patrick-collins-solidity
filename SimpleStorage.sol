@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
-//pragma solidity ^0.8.7; ^symbol means any version of 0.8.x from 0.8.7 and above
+pragma solidity ^0.8.8;
+//pragma solidity ^0.8.8; ^symbol means any version of 0.8.x from 0.8.8 and above
 //we can also specify a range, or exact version
 
 contract SimpleStorage{
@@ -23,7 +23,7 @@ contract SimpleStorage{
     People[] public peopleList;
     mapping(string => uint256) public nameToFavouriteNumber;
 
-    function store(uint256 _favouriteNumber) public {
+    function store(uint256 _favouriteNumber) public virtual{
         favouriteNumber = _favouriteNumber;
     }
 

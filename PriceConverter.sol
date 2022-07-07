@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+//https://solidity-by-example.org/
+
 pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";//not a syntax error

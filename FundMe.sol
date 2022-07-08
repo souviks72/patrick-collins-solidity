@@ -13,9 +13,21 @@ contract FundMe{
     using PriceConverter for uint256;
     //This allows us to use PriceConverter library as if it is a method of uint256 class
 
-    uint256 public minimumUsd = 50 * 1e18; //$50 in solidity math needs 18 more zeros
+    /*
+    - constant : used for variables that are set once and never change. Using constant keyword saves gas. Customary to 
+                 have these variables in all caps
+    - immutable: used for variables which are declared first, then set to a value once and for all in a different line, like
+                 the owner variable. Also saves gas. Variable names usually preceed with i_<var_name>
+    */
+
+    uint256 public constant MINIMUMUSD = 50 * 1e18; //$50 in solidity math needs 18 more zeros
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
+
+    address public immutable i_owner;
+    constructor(){
+        i_owner = msg.sender;
+    }
 
     function fund() public payable{
         // Want to be able to set a minimum fund amount in USD
@@ -26,7 +38,7 @@ contract FundMe{
         //msg.value is a global variable for the value being sent
         //require(getConversionRate(msg.value) >= minimumUsd, "Sent less than min value");
         // 1e18wei = 1ETH (All calculations are done in terms of wei)
-        require(msg.value.getConversionRate() >= minimumUsd);
+        require(msg.value.getConversionRate() >= MINIMUMUSD);
         //using the library and "for" keyword, getConversionRate is now a function of uint256(here msg.value) itself
         // So we can call getConversion() ON msg.value and msg.value WILL BE PASSED AS THE FIRST argument to getConversionRate always by default
         //hence no need to pass it. If there were more args in getConversionRate() then we will need to pass them explicitly
@@ -41,7 +53,10 @@ contract FundMe{
         //msg.sender is a global value for the wallet address calling a function in a contract
     }    
 
-    function withdraw() public {
+    function withdraw() public onlyOwner{//Modifier
+        //only owner should be able to withdraw funds
+        //require(msg.sender == owner, "Only owner is able to withdraw funds");
+
         //set addressToAmountFunded map to zero
         for(uint256 i=0; i<funders.length;i++){
             address funder = funders[i];
@@ -84,10 +99,21 @@ contract FundMe{
             value we add in "value" box in Remix IDE
         */
         //(bool callSuccess, bytes memory dataReturned) = payable(msg.sender).call{value: address(this).balance}("");
+
         // the brackets("") at the end is where we pass info about the function we are calling. Since here we are not
         // actually calling a function, we pass ""
         // here we dont need to call a function so dataReturned is not needed
         (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
-        require(sendSuccess, "Call failed");
+        require(callSuccess, "Call failed");
     }
+
+    //Modifiers are like middlewares in APIs
+    modifier onlyOwner {
+        require(msg.sender == i_owner, "Only owner can withdraw funds");
+        _;
+    }
+    // this modifier will basically take the function code and paste it in the
+    // "_;". So now the modified function will have this require() statement 
+    // at the top. Without the "_;" there will be no place for solidity to paste
+    // the function code and the modifier won't work.
 }

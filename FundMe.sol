@@ -9,6 +9,11 @@ pragma solidity ^0.8.8;
 
 import "./PriceConverter.sol";
 
+error NotOwner();// introduced on version 0.8.4., it is more gas efficient than require
+// use it with an if-else state, call like this: revert NotOwner(). This will revert
+// transactions like require does for transfer, send, call, etc
+// example in the onlyOwner modifier
+
 contract FundMe{
     using PriceConverter for uint256;
     //This allows us to use PriceConverter library as if it is a method of uint256 class
@@ -107,9 +112,21 @@ contract FundMe{
         require(callSuccess, "Call failed");
     }
 
+    // What if someone sends ether to this contract without calling fund()?
+    receive() external payable{
+        fund();
+    }
+
+    fallback() external payable{
+        fund();
+    }
+
     //Modifiers are like middlewares in APIs
     modifier onlyOwner {
-        require(msg.sender == i_owner, "Only owner can withdraw funds");
+        //require(msg.sender == i_owner, "Only owner can withdraw funds");
+        if (msg.sender != i_owner){
+            revert NotOwner("Only owner can withdraw funds");
+        }
         _;
     }
     // this modifier will basically take the function code and paste it in the
